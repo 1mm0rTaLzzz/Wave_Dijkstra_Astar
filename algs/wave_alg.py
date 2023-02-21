@@ -26,7 +26,7 @@ def solve(matrix, start, end):
     way = np.array([[], []])
     move = np.array([[1, 0], [0, 1], [-1, 0], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]])  # 8 move ver
     # move = np.array([[1, 0], [0, 1], [-1, 0], [0, -1]]) # 4 move ver
-    print('Point start', start, '\n', 'Point end', end)
+    print('Point start', end, '\n', 'Point end', start)
     temp_x, temp_y = end[0], end[1]
     temp = matrix[temp_x][temp_y] - 1
     while temp != 0:

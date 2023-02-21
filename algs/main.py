@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+import pandas as pd
 import time
 from wave_alg import solve
 import dijkstra_alg
@@ -56,14 +57,32 @@ while running:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 start = time.time()
-                way, matrix = solve(matrix, [x1, y1], [x, y])
+                # dijkstra
+                ordinal_number1 = x1 * 12 + y1
+                ordinal_number2 = x * 12 + y
+                print(ordinal_number1)
+                adjacency_matrix = dijkstra_alg.get_adjacency_matrix(matrix)
+
+                ordinal_number_of_path = dijkstra_alg.dijkstra(adjacency_matrix, ordinal_number2, ordinal_number1)
+                path = list()
+                for i in ordinal_number_of_path:
+                    row_p, column_p = i // 12, i % 12
+                    path.append([column_p, row_p])
+
+                print(path)
+                df = pd.DataFrame(adjacency_matrix)
+                pd.set_option('display.max_rows', None)
+                pd.set_option('display.max_columns', None)
+                pd.set_option('display.width', None)
+                print(df)
+                for i in path[1:-1]:
+                    grid[i[1]][i[0]] = GRAY
+                # Wave
                 '''
-                matrix[matrix == -1] = 0
-                print(matrix)
-                dijkstra_alg.dijkstra(matrix, 0)
-                '''
+                way, matrix = solve(matrix, [x, y], [x1, y1])
                 for i in way[:-1]:
                     grid[i[0]][i[1]] = GRAY
+                '''
                 end = time.time() - start
                 print(end)
 
