@@ -2,8 +2,9 @@ import pygame
 import numpy as np
 import pandas as pd
 import time
-from wave_alg import solve
-import dijkstra_alg
+import wave_alg
+import dijkstra_alg_v2
+
 
 
 pygame.init()
@@ -14,6 +15,7 @@ screen = pygame.display.set_mode(win_size)
 
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
 GRAY = (128, 128, 128)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -25,7 +27,7 @@ cols = win_size[0] // cell_size
 
 grid = np.array([[WHITE for j in range(cols)] for i in range(rows)])
 
-matrix = np.array([[0 for j in range(cols)] for i in range(rows)])
+matrix = np.array([[0 for j in range(cols)] for i in range(rows)], dtype=np.float64)
 
 running = True
 
@@ -54,38 +56,19 @@ while running:
             elif event.button == 5:
                 grid[row][col] = WHITE
                 matrix[row][col] = 0
+            # Dijkstra
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                start = time.time()
-                # dijkstra
-                ordinal_number1 = x1 * 12 + y1
-                ordinal_number2 = x * 12 + y
-                print(ordinal_number1)
-                adjacency_matrix = dijkstra_alg.get_adjacency_matrix(matrix)
-
-                ordinal_number_of_path = dijkstra_alg.dijkstra(adjacency_matrix, ordinal_number2, ordinal_number1)
-                path = list()
-                for i in ordinal_number_of_path:
-                    row_p, column_p = i // 12, i % 12
-                    path.append([column_p, row_p])
-
-                print(path)
-                df = pd.DataFrame(adjacency_matrix)
-                pd.set_option('display.max_rows', None)
-                pd.set_option('display.max_columns', None)
-                pd.set_option('display.width', None)
-                print(df)
-                for i in path[1:-1]:
-                    grid[i[1]][i[0]] = GRAY
-                # Wave
-                '''
-                way, matrix = solve(matrix, [x, y], [x1, y1])
+            if event.key == pygame.K_LSHIFT:
+                way, matrix = dijkstra_alg_v2.solve(matrix, [x, y], [x1, y1])
                 for i in way[:-1]:
                     grid[i[0]][i[1]] = GRAY
-                '''
-                end = time.time() - start
-                print(end)
-
+                matrix = np.array([[0 for j in range(cols)] for i in range(rows)], dtype=np.float64)
+            # Wave alg
+            elif event.key == pygame.K_RSHIFT:
+                way, matrix = wave_alg.solve(matrix, [x, y], [x1, y1])
+                for i in way[:-1]:
+                    grid[i[0]][i[1]] = BLUE
+                matrix = np.array([[0 for j in range(cols)] for i in range(rows)], dtype=np.float64)
     screen.fill(WHITE)
 
     for i in range(rows):
