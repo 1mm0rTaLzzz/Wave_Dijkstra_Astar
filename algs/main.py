@@ -58,17 +58,17 @@ while running:
                 matrix[row][col] = 0
             # Dijkstra
         elif event.type == pygame.KEYDOWN:
+            matrix1 = matrix
             if event.key == pygame.K_LSHIFT:
-                way, matrix = dijkstra_alg_v2.solve(matrix, [x, y], [x1, y1])
+                way, matrix1 = dijkstra_alg_v2.solve(matrix, [x, y], [x1, y1])
                 for i in way[:-1]:
                     grid[i[0]][i[1]] = GRAY
-                matrix = np.array([[0 for j in range(cols)] for i in range(rows)], dtype=np.float64)
+
             # Wave alg
             elif event.key == pygame.K_RSHIFT:
-                way, matrix = wave_alg.solve(matrix, [x, y], [x1, y1])
+                way, matrix1 = wave_alg.solve(matrix, [x, y], [x1, y1])
                 for i in way[:-1]:
                     grid[i[0]][i[1]] = BLUE
-                matrix = np.array([[0 for j in range(cols)] for i in range(rows)], dtype=np.float64)
     screen.fill(WHITE)
 
     for i in range(rows):
