@@ -1,11 +1,9 @@
 import pygame
 import numpy as np
-import pandas as pd
-import time
 import wave_alg
 import dijkstra_alg_v2
-
-
+import Astar_alg
+import test
 
 pygame.init()
 
@@ -19,6 +17,7 @@ BLUE = (0, 0, 255)
 GRAY = (128, 128, 128)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+ORANGE = (255, 140, 0)
 
 cell_size = 50
 
@@ -69,6 +68,11 @@ while running:
                 way, matrix1 = wave_alg.solve(matrix, [x, y], [x1, y1])
                 for i in way[:-1]:
                     grid[i[0]][i[1]] = BLUE
+            elif event.key == pygame.K_SPACE:
+                way = Astar_alg.astar((x, y), (x1, y1), matrix)
+                #way = test.astar((x, y), (x1, y1), matrix)
+                for i in way[1:-1]:
+                    grid[i[0]][i[1]] = ORANGE
     screen.fill(WHITE)
 
     for i in range(rows):
