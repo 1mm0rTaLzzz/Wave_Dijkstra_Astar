@@ -1,106 +1,61 @@
-class Node():
-    """A node class for A* Pathfinding"""
 
-    def __init__(self, parent=None, position=None):
-        self.parent = parent
-        self.position = position
-        '''
-        F = G + H
-        One important aspect of A* is f = g + h. The f, g, and h variables are in our Node class and get calculated 
-        every time we create a new node. Quickly I’ll go over what these variables mean.
-
-        F is the total cost of the node.
-        G is the distance between the current node and the start node.
-        H is the heuristic — estimated distance from the current node to the end node.
-        '''
-        self.g = 0
-        self.h = 0
-        self.f = 0
-
-    def __eq__(self, other):
-        return self.position == other.position
+import math
+import heapq
 
 
-def astar(maze, start, end):
-    """Returns a list of tuples as a path from the given start to the given end in the given maze"""
+def astar(start, end, matrix):
+    # Define helper functions
+    def heuristic(a, b):
+        return abs(b[0] - a[0]) + abs(b[1] - a[1])
 
-    # Create start and end node
-    start_node = Node(None, start)
-    start_node.g = start_node.h = start_node.f = 0
-    end_node = Node(None, end)
-    end_node.g = end_node.h = end_node.f = 0
+    def neighbors(point):
+        row, col = point
+        # Define possible neighbors
+        possible_neighbors = [(row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1),
+                              (row - 1, col - 1), (row - 1, col + 1), (row + 1, col - 1), (row + 1, col + 1)]
+        # Filter out neighbors that are walls or out of bounds
+        valid_neighbors = []
+        for neighbor in possible_neighbors:
+            row, col = neighbor
+            if 0 <= row < len(matrix) and 0 <= col < len(matrix[0]) and matrix[row][col] != -1:
+                # Set cost to sqrt(2) for diagonal movements, and 1 for up/down/left/right movements
+                if neighbor[0] == point[0] or neighbor[1] == point[1]:
+                    valid_neighbors.append((neighbor, 1))
+                else:
+                    valid_neighbors.append((neighbor, math.sqrt(2)))
+        return valid_neighbors
 
-    # Initialize both open and closed list
-    open_list = []
-    closed_list = []
+    # Define priority queue and starting values
+    queue = []
+    visited = set()
+    heapq.heappush(queue, (0, start, [start]))
 
-    # Add the start node
-    open_list.append(start_node)
+    # Loop until queue is empty
+    while queue:
+        # Pop the lowest priority node from the queue
+        cost, current, path = heapq.heappop(queue)
 
-    # Loop until you find the end
-    while len(open_list) > 0:
+        # Check if we have reached the end
+        if current == end:
+            return path
 
-        # Get the current node
-        current_node = open_list[0]
-        current_index = 0
-        for index, item in enumerate(open_list):
-            if item.f < current_node.f:
-                current_node = item
-                current_index = index
+        # Check if we have already visited this node
+        if current in visited:
+            continue
 
-        # Pop current off open list, add to closed list
-        open_list.pop(current_index)
-        closed_list.append(current_node)
+        # Add current node to visited set
+        visited.add(current)
 
-        # Found the goal
-        if current_node == end_node:
-            path = []
-            current = current_node
-            while current is not None:
-                path.append(current.position)
-                current = current.parent
-            return path[::-1]  # Return reversed path
+        # Get the neighbors of the current node
+        for neighbor, neighbor_cost in neighbors(current):
+            # Calculate the cost to reach the neighbor node
+            neighbor_cost = cost + neighbor_cost
 
-        # Generate children
-        children = []
-        for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]:  # Adjacent squares
+            # Calculate the heuristic cost of the neighbor node
+            neighbor_heuristic = heuristic(neighbor, end)
 
-            # Get node position
-            node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
+            # Add the neighbor node to the queue with the total cost
+            heapq.heappush(queue, (neighbor_cost + neighbor_heuristic, neighbor, path + [neighbor]))
 
-            # Make sure within range
-            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (
-                    len(maze[len(maze) - 1]) - 1) or node_position[1] < 0:
-                continue
-
-            # Make sure walkable cell
-            if maze[node_position[0]][node_position[1]] == -1:
-                continue
-
-            # Create new node
-            new_node = Node(current_node, node_position)
-
-            # Append
-            children.append(new_node)
-
-        # Loop through children
-        for child in children:
-
-            # Child is on the closed list
-            for closed_child in closed_list:
-                if child == closed_child:
-                    continue
-
-            # Create the f, g, and h values
-            child.g = current_node.g + 1
-            child.h = ((child.position[0] - end_node.position[0]) ** 2) + (
-                        (child.position[1] - end_node.position[1]) ** 2)
-            child.f = child.g + child.h
-
-            # Child is already in the open list
-            for open_node in open_list:
-                if child == open_node and child.g > open_node.g:
-                    continue
-
-            # Add the child to the open list
-            open_list.append(child)
+    # If we reach here, there is no path from start to end
+    return None
