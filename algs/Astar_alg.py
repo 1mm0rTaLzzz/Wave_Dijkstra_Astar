@@ -1,61 +1,77 @@
+import pandas as pd
+import numpy as np
 
-import math
-import heapq
+
+def euclidean_distance(point1, point2):
+    point1 = np.array(point1)
+    point2 = np.array(point2)
+    distance = np.linalg.norm(point2 - point1)
+    return distance
 
 
-def astar(start, end, matrix):
-    # Define helper functions
-    def heuristic(a, b):
-        return abs(b[0] - a[0]) + abs(b[1] - a[1])
+def solve(matrix, start, end):
+    wavefront = np.array([[-1 for j in range(len(matrix[0]))] for i in range(len(matrix))], dtype=np.float64)
+    wavefront[start[0]][start[1]] = 1
+    wave_value = 1
 
-    def neighbors(point):
-        row, col = point
-        # Define possible neighbors
-        possible_neighbors = [(row - 1, col), (row + 1, col), (row, col - 1), (row, col + 1),
-                              (row - 1, col - 1), (row - 1, col + 1), (row + 1, col - 1), (row + 1, col + 1)]
-        # Filter out neighbors that are walls or out of bounds
-        valid_neighbors = []
-        for neighbor in possible_neighbors:
-            row, col = neighbor
-            if 0 <= row < len(matrix) and 0 <= col < len(matrix[0]) and matrix[row][col] != -1:
-                # Set cost to sqrt(2) for diagonal movements, and 1 for up/down/left/right movements
-                if neighbor[0] == point[0] or neighbor[1] == point[1]:
-                    valid_neighbors.append((neighbor, 1))
-                else:
-                    valid_neighbors.append((neighbor, math.sqrt(2)))
-        return valid_neighbors
+    while wave_value < np.size(matrix):
 
-    # Define priority queue and starting values
-    queue = []
-    visited = set()
-    heapq.heappush(queue, (0, start, [start]))
+        for i in range(len(matrix)):
+            for j in range(len(matrix[0])):
+                if wavefront[i][j] >= wave_value:
+                    neighbors = [(i - 1, j - 1), (i + 1, j + 1), (i - 1, j + 1), (i + 1, j - 1), (i - 1, j), (i + 1, j), (i, j - 1), (i, j + 1)]
+                    for neighbor in neighbors:
+                        if neighbor[0] >= 0 and neighbor[0] < len(matrix) and neighbor[1] >= 0 and neighbor[1] < len(
+                                matrix[0]):
+                            if neighbor == (i - 1, j) or neighbor == (i + 1, j) or neighbor == (
+                                    i, j + 1) or neighbor == (i, j - 1):
+                                if (wavefront[neighbor[0]][neighbor[1]] >= wavefront[i][j] + 1 or wavefront[neighbor[0]][
+                                    neighbor[1]] == -1) and matrix[neighbor[0]][neighbor[1]] != -1:
+                                    wavefront[neighbor[0]][neighbor[1]] = wavefront[i][j] + 1
 
-    # Loop until queue is empty
-    while queue:
-        # Pop the lowest priority node from the queue
-        cost, current, path = heapq.heappop(queue)
+                            else:
+                                if (wavefront[neighbor[0]][neighbor[1]] >= wavefront[i][j] + np.sqrt(2) or
+                                    wavefront[neighbor[0]][neighbor[1]] == -1) and matrix[neighbor[0]][
+                                    neighbor[1]] != -1:
+                                    wavefront[neighbor[0]][neighbor[1]] = wavefront[i][j] + np.sqrt(2)
+        wave_value += 1
+    df = pd.DataFrame(wavefront)
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', None)
+    print(df)
+    for i in range(len(matrix[0])):
+        for j in range(len(matrix)):
+            if wavefront[i][j] != -1:
+                wavefront[i][j] += euclidean_distance((i, j), start)
 
-        # Check if we have reached the end
-        if current == end:
-            return path
 
-        # Check if we have already visited this node
-        if current in visited:
-            continue
+    matrix = wavefront
+    print(df)
 
-        # Add current node to visited set
-        visited.add(current)
+    way = np.array([[], []], dtype=np.int16)
+    move = np.array([[1, 0], [0, 1], [-1, 0], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]])  # 8 move ver
+    # move = np.array([[1, 0], [0, 1], [-1, 0], [0, -1]]) # 4 move ver
+    print('Point start', end, '\n', 'Point end', start)
 
-        # Get the neighbors of the current node
-        for neighbor, neighbor_cost in neighbors(current):
-            # Calculate the cost to reach the neighbor node
-            neighbor_cost = cost + neighbor_cost
+    temp_x, temp_y = end[0], end[1]
+    min_ = 100
 
-            # Calculate the heuristic cost of the neighbor node
-            neighbor_heuristic = heuristic(neighbor, end)
+    while temp_x != start[0] or temp_y != start[1]:
+        for m in move:
+            step_x = temp_x + m[0]
+            step_y = temp_y + m[1]
+            try:
+                if min_ > matrix[step_x][step_y] and matrix[step_x][step_y] != -1 and step_x >= 0 and step_y >= 0:
+                    min_ = matrix[step_x][step_y]
+                    min_x, min_y = step_x, step_y
 
-            # Add the neighbor node to the queue with the total cost
-            heapq.heappush(queue, (neighbor_cost + neighbor_heuristic, neighbor, path + [neighbor]))
+            except Exception:
+                pass
 
-    # If we reach here, there is no path from start to end
-    return None
+        temp_x, temp_y = min_x, min_y
+        way = np.append(way, np.array([temp_x, temp_y]))
+    way = way.reshape(-1, 2)
+    print(way)
+    return way, matrix
+
