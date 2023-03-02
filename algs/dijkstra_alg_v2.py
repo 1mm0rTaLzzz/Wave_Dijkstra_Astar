@@ -7,7 +7,7 @@ def solve(matrix, start, end):
     wavefront = np.array([[-1 for j in range(len(matrix[0]))] for i in range(len(matrix))], dtype=np.float64)
     wavefront[start[0]][start[1]] = 1
     wave_value = 1
-    while wavefront[end[0]][end[1]] == -1:
+    while  wave_value < np.size(wavefront):
         for i in range(len(matrix[0])):
             for j in range(len(matrix)):
                 if wavefront[i][j] >= wave_value:
@@ -22,10 +22,12 @@ def solve(matrix, start, end):
                                     wavefront[neighbor[0]][neighbor[1]] == -1) and matrix[neighbor[0]][
                                     neighbor[1]] == 0:
                                     wavefront[neighbor[0]][neighbor[1]] = wavefront[i][j] + np.sqrt(2)
+
                             else:
                                 if (wavefront[neighbor[0]][neighbor[1]] > wavefront[i][j] + 1 or wavefront[neighbor[0]][
                                     neighbor[1]] == -1) and matrix[neighbor[0]][neighbor[1]] == 0:
                                     wavefront[neighbor[0]][neighbor[1]] = wavefront[i][j] + 1
+
 
         wave_value += 1
     matrix = wavefront
@@ -43,7 +45,8 @@ def solve(matrix, start, end):
 
     temp_x, temp_y = end[0], end[1]
     min_ = 100
-
+    check=True
+    min_x, mix_y = end[0], end[1]
     while temp_x != start[0] or temp_y != start[1]:
         for m in move:
             step_x = temp_x + m[0]
@@ -52,12 +55,20 @@ def solve(matrix, start, end):
                 if min_ > matrix[step_x][step_y] and matrix[step_x][step_y] != -1 and step_x >= 0 and step_y >= 0:
                     min_ = matrix[step_x][step_y]
                     min_x, min_y = step_x, step_y
-
+                    check = False
             except Exception:
                 pass
-        temp_x, temp_y = min_x, min_y
-        way = np.append(way, np.array([temp_x, temp_y]))
-        print([temp_x, temp_y])
+        if check == False:
+            # print(temp_x,temp_y)
+            temp_x, temp_y = min_x, min_y
+            way = np.append(way, np.array([temp_x, temp_y]))
+            # print(way)
+            #print([temp_x, temp_y])
+            #print(way, type(way))
+        else:
+            print("No way")
+            break
     way = way.reshape(-1, 2)
+    #print(type(way))
     print(way)
     return way, matrix

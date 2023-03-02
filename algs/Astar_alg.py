@@ -56,7 +56,8 @@ def solve(matrix, start, end):
 
     temp_x, temp_y = end[0], end[1]
     min_ = 100
-
+    check = True
+    min_x, mix_y = end[0], end[1]
     while temp_x != start[0] or temp_y != start[1]:
         for m in move:
             step_x = temp_x + m[0]
@@ -65,13 +66,18 @@ def solve(matrix, start, end):
                 if min_ > matrix[step_x][step_y] and matrix[step_x][step_y] != -1 and step_x >= 0 and step_y >= 0:
                     min_ = matrix[step_x][step_y]
                     min_x, min_y = step_x, step_y
-
+                    check = False
             except Exception:
                 pass
-
-        temp_x, temp_y = min_x, min_y
-        way = np.append(way, np.array([temp_x, temp_y]))
+        if check == False:
+            # print(temp_x,temp_y)
+            temp_x, temp_y = min_x, min_y
+            way = np.append(way, np.array([temp_x, temp_y]))
+        else:
+            print("No way")
+            break
     way = way.reshape(-1, 2)
     print(way)
     return way, matrix
+
 

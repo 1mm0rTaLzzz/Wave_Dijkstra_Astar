@@ -3,7 +3,7 @@ import numpy as np
 import wave_alg
 import dijkstra_alg_v2
 import Astar_alg
-import test
+
 
 pygame.init()
 
@@ -28,6 +28,11 @@ grid = np.array([[WHITE for j in range(cols)] for i in range(rows)])
 
 matrix = np.array([[0 for j in range(cols)] for i in range(rows)], dtype=np.float64)
 
+ways=np.array([], dtype=np.int16)
+
+cr,cl=0,0
+
+
 running = True
 
 while running:
@@ -42,13 +47,27 @@ while running:
             col = pos[0] // cell_size
 
             if event.button == 1:
+                cl+=1
+                if cl>1:
+                    grid[x][y] = WHITE
                 grid[row][col] = RED
                 x, y = row, col
                 matrix[row][col] = 0
+                ways = ways.astype(np.int16)
+                for i in ways:
+                    grid[i[0]][i[1]]= WHITE
+                ways = np.array([])
             elif event.button == 3:
+                cr+=1
+                if cr>1:
+                    grid[x1][y1] = WHITE
                 grid[row][col] = GREEN
                 x1, y1 = row, col
                 matrix[row][col] = 0
+                ways = ways.astype(np.int16)
+                for i in ways:
+                    grid[i[0]][i[1]] = WHITE
+                ways = np.array([])
             elif event.button == 2 or event.button == 5:
                 grid[row][col] = BLACK
                 matrix[row][col] = -1
@@ -62,17 +81,26 @@ while running:
                 way, matrix1 = dijkstra_alg_v2.solve(matrix, [x, y], [x1, y1])
                 for i in way[:-1]:
                     grid[i[0]][i[1]] = GRAY
-
+                ways = np.append(ways, np.array(way, dtype=np.int16).reshape(-1, 2))
+                ways = ways.reshape(-1, 2)
+                print(ways)
             # Wave alg
             elif event.key == pygame.K_RSHIFT:
                 way, matrix1 = wave_alg.solve(matrix, [x, y], [x1, y1])
                 for i in way[:-1]:
                     grid[i[0]][i[1]] = BLUE
+                ways = np.append(ways,np.array(way,dtype=np.int16).reshape(-1,2))
+                ways = ways.reshape(-1, 2)
+                print(ways)
             elif event.key == pygame.K_SPACE:
-                way = Astar_alg.astar((x, y), (x1, y1), matrix)
+                way, matrix1 = Astar_alg.solve(matrix, (x, y), (x1, y1))
                 #way = test.astar((x, y), (x1, y1), matrix)
-                for i in way[1:-1]:
+                for i in way[:-1]:
                     grid[i[0]][i[1]] = ORANGE
+                #print(way)
+                ways = np.append(ways,np.array(way,dtype=np.int16).reshape(-1,2))
+                ways = ways.reshape(-1, 2)
+                print(ways)
     screen.fill(WHITE)
 
     for i in range(rows):
