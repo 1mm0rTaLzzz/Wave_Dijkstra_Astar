@@ -46,3 +46,11 @@ def rrt(start, end,rows,cols):
     newNode = np.array(equations(x,y,x2,y2))
     print(newNode)
     return lenedge, rs, newNode
+
+# elif event.key == pygame.K_TAB:
+# lenedge, rs, node = RRT.rrt([x, y], [x1, y1], rows, cols)
+# x2, y2 = node[0], node[1]
+# grid[node[0]][node[1]] = PURPLE
+# # solves, lens, idx =  RRT.equations(x,y,x2,y2)
+# # print(int(solves[idx][0]))
+# # grid[int(solves[idx][0])][int(solves[idx][1])] = ORANGE
